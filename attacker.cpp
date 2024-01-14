@@ -2,6 +2,7 @@
     #include <winsock2.h>
     #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
     #define close closesocket
+    #define read(s, buf, len) recv(s, buf, len, 0)
     typedef int socklen_t;
 #else
     #include <sys/socket.h>
@@ -51,7 +52,7 @@ int main() {
 
     // Set socket option to reuse address
     int opt = 1;
-    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt)) == -1) {
         std::cerr << "Failed to set socket options." << std::endl;
         return 1;
     }

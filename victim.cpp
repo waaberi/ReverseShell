@@ -1,7 +1,9 @@
 #ifdef _WIN32
     #include <winsock2.h>
+    #include <ws2tcpip.h> // For InetPton
     #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
     #define close closesocket
+    #define read(s, buf, len) recv(s, buf, len, 0)
     typedef int socklen_t;
 #else
     #include <sys/socket.h>
@@ -96,6 +98,6 @@ int main() {
     #ifdef _WIN32
         WSACleanup();
     #endif
-    
+
     return 0;
 }
