@@ -1,7 +1,14 @@
+#ifdef _WIN32
+    #include <winsock2.h>
+    #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+    #define close closesocket
+    typedef int socklen_t;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
+#endif
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <cstring>
 
 bool is_relative(const std::string& path) {
@@ -28,6 +35,13 @@ std::string apply_change(const std::string& new_path, const std::string& current
 std::string working_directory = ".";
 
 int main() {
+    #ifdef _WIN32
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            std::cerr << "Failed to initialize Winsock." << std::endl;
+            return 1;
+        }
+    #endif
     // Create a socket
     int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket == -1) {
@@ -114,6 +128,10 @@ int main() {
     // Close the sockets
     close(clientSocket);
     close(serverSocket);
+
+        #ifdef _WIN32
+            WSACleanup();
+        #endif
 
     return 0;
 }

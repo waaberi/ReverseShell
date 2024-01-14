@@ -1,9 +1,16 @@
+#ifdef _WIN32
+    #include <winsock2.h>
+    #pragma comment(lib, "ws2_32.lib") // Link with ws2_32.lib
+    #define close closesocket
+    typedef int socklen_t;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
+    #include <arpa/inet.h>
+#endif
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <cstring>
-#include <arpa/inet.h>
 #include <array>
 #include <memory>
 #include <stdexcept>
@@ -39,6 +46,13 @@ void executeCommand(const std::string& command, int clientSocket) {
 
 
 int main() {
+    #ifdef _WIN32
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            std::cerr << "Failed to initialize Winsock." << std::endl;
+            return 1;
+        }
+    #endif
     // Create a socket
     int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket == -1) {
@@ -79,5 +93,9 @@ int main() {
     // Close the socket
     close(clientSocket);
 
+    #ifdef _WIN32
+        WSACleanup();
+    #endif
+    
     return 0;
 }
